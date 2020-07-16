@@ -42,19 +42,15 @@ for i=1:length(mega)
     %unknown =5
 end
 cabinet.type=type;
-typz = cell(1,5);%not sure what this is for
-typz{1,1} = 'on ststain';
-typz{1,2} = 'on transiant';
-typz{1,3} ='off sustain';
-typz{1,4}= 'off transiant';
-typz{1,5}= 'unknown';
-
+typz = cell(1,5);
+  typz{1,1} = 
+end
 %% make them into a sorted megafile
 cabinet.hmm=cell(2,length(hmmg_u));
 for k = 1:length(hmmg_u)
     target = hmmg_u(k);
     cabinet.hmm{2,k} = target;
-    for i=1:length(mega)%cell id
+    for i=1:length(mega)%cell id 
         temp = mega{1,i};
         es =length(temp);
         for j =1:es%all the epochs
@@ -71,7 +67,7 @@ cabinet.ou=cell(2,length(oug_u));
 for k = 1:length(oug_u)
     target = oug_u(k);
     cabinet.ou{2,k} = target;
-    for i=1:length(mega)%cell id
+    for i=1:length(mega)%cell id 
         temp = mega{1,i};
         es =length(temp);
         for j =1:es%all the epochs
