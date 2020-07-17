@@ -4,7 +4,7 @@ clc
 %main process
 hmmg=[];
 oug=[];
-load('D:\RiekeLab\cellattach\mega2.mat')
+load('mega.mat')
 %to check how many g values are there in the Hmm and OU
 for i=1:length(mega)
     temp = mega{1,i};
@@ -41,13 +41,13 @@ for i=1:length(mega)
     %off transiant =4
     %unknown =5
 end
-cabinet.type=type;
+cabinet.type=input('cell type?');
 %% make them into a sorted megafile
 cabinet.hmm=cell(2,length(hmmg_u));
 for k = 1:length(hmmg_u)
     target = hmmg_u(k);
     cabinet.hmm{2,k} = target;
-    for i=1:length(mega)%cell id 
+    for i=1:length(mega)%cell id there is an error here
         temp = mega{1,i};
         es =length(temp);
         for j =1:es%all the epochs
@@ -69,7 +69,7 @@ for k = 1:length(oug_u)
         es =length(temp);
         for j =1:es%all the epochs
             if strcmp(temp(j).meta.displayName,'OU Single') & temp(j).meta.correlationTime==target
-                temp(j).id=i;
+                temp(j).id=i;%i th cell
                 cabinet.ou{1,k} =  [cabinet.ou{1,k}; temp(j)];
             end
         end

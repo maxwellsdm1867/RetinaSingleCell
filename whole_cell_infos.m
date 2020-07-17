@@ -30,9 +30,14 @@ for i = 1:length(raw_sorted)%g values
 end
 results(1,:) = temp1;
 results{3,1}=t;
+hmm_r = results;
+save('hmm_r.mat','hmm_r')
 toc
 %%
+close all
+clear all
 tic
+load('cabinet.mat')
 raw_sorted = cabinet.ou;
 results = cell(2,size(cabinet.ou,2));%spike and stimulus side by side
 results(2,:)=raw_sorted(2,:);
@@ -60,4 +65,7 @@ for i = 1:length(raw_sorted)%g values
 end
 results(1,:) = temp1;
 results{3,1}=t;
+ou_r = results;
+save('ou_r.mat','ou_r')
+
 toc
