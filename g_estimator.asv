@@ -16,24 +16,19 @@ intensity = [];%intensity of the steps
 
 idx = 1:bins_per_step:length(dwn_stim);
 cnt = 0;
+temp_min = []; % response to min intensity
+temp_max = [];% response to max intensity
 for i = 1:(length(dwn_stim)/bins_per_step )%ith step
-    
-    temp_fr = fr(idx(i):(idx(i+1)-1));
-    temp_stim = dwn_stim(idx(i):(idx(i+1)-1));
+    %keyboard
+    temp_fr = fr(idx(i):(idx(i)+9));
+    temp_stim = dwn_stim(idx(i):(idx(i)+9));
     [M,I] = max(temp_fr);
-    temp_min = []; % response to min intensity
-    temp_max = [];% response to max intensity
+    
     if M ~= 0% & temp_fr(end)~=0
         t2p  =[t2p I*step_size*1000];%time to peak in ms
         rpl =[rpl temp_fr(end)/M];
         intensity = [intensity temp_stim(1)];
-        %extract the demo firing rate
-        if intensity = min(dwn_stim)
-            temp_min = [temp_min;temp_fr];
-        elseif intensity = max(dwn_stim)
-            temp_max =  [temp_max;temp_fr];
-        end
-        
+
     end
     
     
