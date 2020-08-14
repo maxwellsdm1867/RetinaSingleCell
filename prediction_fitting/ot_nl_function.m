@@ -9,4 +9,5 @@ gamma = X(3);     % determines threshold/shoulder location
 epsilon  =X(4);   % shifts all up or down
 params = [alpha; beta; gamma; epsilon];
 LN_out = (params(1) * normcdf(params(2) .* xarray + params(3), 0, 1) + params(4));
+%keyboard
 end

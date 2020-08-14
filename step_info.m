@@ -1,4 +1,4 @@
-function [t2p, rpl,intensity,psth,diff_pattern]=  step_info(spike,stim,stim_rate, tar_rate)
+function [t2p, rpl,intensity,psth_p,psth_n,diff_pattern]=  step_info(spike,stim,stim_rate, tar_rate)
 %the script is used for extracting the revelant information for
 %response of a 200 ms constant
 %quantify (1) time to peak (2)the ratio of peaked and last bin of the
@@ -12,18 +12,21 @@ state_rate = 5;%the update rate of the HMM step
 o_hmm = downsample(stim,stim_rate/state_rate);
 t2p = [];% time to peak
 rpl = [];%the ratio of peaked and last bin of the step
-psth = [];%peri stimuli histogram 
+psth_p = [];%peri stimuli histogram for increment
+psth_n = [];%peri stimuli histogram for decrement
 diff_pattern =[];
 intensity = [];%intensity of the steps
-diff_int = diff([mean(o_hmm) o_hmm]); %the sequence of the intensity difference  
+diff_int = diff([mean(o_hmm) o_hmm]); %the sequence of the intensity difference
 %extract infomation from indivusal steps
 
 idx = 1:bins_per_step:length(dwn_stim);
 cnt = 0;
 temp_min = []; % response to min intensity
 temp_max = [];% response to max intensity
-psth = zeros(1,bins_per_step);
-
+psth_p = zeros(1,bins_per_step);
+psth_n = zeros(1,bins_per_step);
+num_n = 0;
+num_p = 0;
 for i = 1:(length(dwn_stim)/bins_per_step )%ith step
     temp_fr = fr(idx(i):(idx(i)+bins_per_step-1));
     temp_stim = dwn_stim(idx(i):(idx(i)+bins_per_step-1));
@@ -35,8 +38,15 @@ for i = 1:(length(dwn_stim)/bins_per_step )%ith step
         intensity = [intensity temp_stim(1)];
         diff_pattern = [diff_pattern diff_int(i)];
     end
-    psth = psth + temp_fr;
     
+    if diff_int(i)>0
+        psth_p = psth_p + temp_fr;
+        num_p = num_p+1;
+    elseif diff_int(i)<0
+        psth_n = psth_n + temp_fr;
+        num_n = num_n+1;
+    end
 end
-psth = psth/(length(dwn_stim)/bins_per_step );
+psth_p= psth_p/ num_p ;
+psth_n= psth_n/ num_n ;
 end

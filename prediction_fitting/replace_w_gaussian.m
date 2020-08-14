@@ -7,15 +7,24 @@ clc
 chan = 1;
 
 load('D:\RiekeLab\spikes\191217\hmm_r.mat')%load the hmm_r cell
-eg2 = hmm_r{1,2};%extract all the epoches with g = 2
+eg2 = hmm_r{1,2};%extract all the epoches with g = 10;
 spk = eg2(chan).spikes;
 stim = eg2(chan).stim;
+
+
 
 %use the sample rate of 1 ms (1000 Hz) to make things simple;
 Stim = downsample(stim,10);%
 %bin the spike in the sametime bin
 
 [fr] = BinSpk1(0.001,spk,100);
+ntfilt = 1000;  % Try varying this, to see how performance changes!
+Stim = Stim';
+paddedStim = [zeros(ntfilt-1,1); Stim]; % pad early bins of stimulus with zero
+Xdsgn = hankel(paddedStim(1:end-ntfilt+1), Stim(end-ntfilt+1:end));%hankel matrix
+sps = fr';
+nsp = sum(fr);
+sta = (Xdsgn'*sps)/nsp;
 %make a 50 ms Gaussian distrubution
 g_x = -25:25;
 g_y = gaussmf(g_x,[15 0]);
