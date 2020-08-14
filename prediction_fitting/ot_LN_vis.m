@@ -1,6 +1,6 @@
 %ot_LN_vis
 [x,fval,exitflag,output,population,score] = ga_hyberd(9,500);
-%x = optimresults.x;
+%X = optimresults.x;
 X=x;
 sampling_rate =1000;%Hz
 filter_length = 1;%seconds

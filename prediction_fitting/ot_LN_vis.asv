@@ -4,7 +4,6 @@
 
 sampling_rate =1000;%Hz
 filter_length = 1;%seconds
-X_filter = X(1:5);
 X_nl = X(6:9);
 [fr,Stim]= ot_target_loader();
 Stim = (Stim-mean(Stim))';
