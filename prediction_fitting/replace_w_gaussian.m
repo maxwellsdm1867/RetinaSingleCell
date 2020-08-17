@@ -4,8 +4,7 @@ close all
 clear all
 clc
 
-chan = 1;
-
+chan = 3;%epoch selection
 load('D:\RiekeLab\spikes\191217\hmm_r.mat')%load the hmm_r cell
 eg2 = hmm_r{1,2};%extract all the epoches with g = 10;
 spk = eg2(chan).spikes;
@@ -37,5 +36,5 @@ for i = 1 : length(fr)
     pst_fr =  pst_fr+temp_fr;
 end
 cv_fr = pst_fr(52:(52+100000-1));
-
+sr_pair = [Stim'; cv_fr];
 

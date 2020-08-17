@@ -3,7 +3,12 @@ sampling_rate =1000;%Hz
 filter_length = 1;%seconds
 X_filter = X(1:5);
 X_nl = X(6:9);
-[fr,Stim]= ot_target_loader();
+myFolder =  'D:\RiekeLab\codes\fitting_temp_home';
+sr_pair = ot_file_loader(myFolder);
+Stim = sr_pair(1,:);
+fr =  sr_pair(2,:);
+%[fr,Stim]= ot_target_loader();
+
 Stim = (Stim-mean(Stim))';
 %fr = downsample(fr,40);
 
@@ -18,5 +23,5 @@ generator_signal = conv(Stim,flip(nor_filter));
 filter_out = generator_signal(1:length(Stim));
 LN_out = ot_nl_function(X_nl ,filter_out);
 
-err = sum(abs((LN_out-fr').^2));%error
+err = sum(abs((LN_out-fr').^2));%error second order 
 end
