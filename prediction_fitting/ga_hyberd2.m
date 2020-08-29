@@ -11,5 +11,6 @@ options = optimoptions(options,'MutationFcn', {  @mutationuniform [] });
 options = optimoptions(options,'HybridFcn', {  @fminsearch  optimset('MaxFunEvals',5000,'MaxIter',100000); });
 options = optimoptions(options,'Display', 'off');
 options = optimoptions(options,'PlotFcn', { @gaplotbestf });
+options = optimoptions(options,'UseParallel', true);
 [x,fval,exitflag,output,population,score] = ...
 ga(@ot_LN_errf,nvars,[],[],[],[],[],[],[],[],options);
