@@ -9,9 +9,9 @@ results(2,:)=raw_sorted(2,:);
 for i = 1:length(raw_sorted)%g values
     tar = raw_sorted{1,i};
     for j= 1:length(tar)
-        dwn_rsp = downsample(tar(j).epoch,400);
+        dwn_rsp = downsample(tar(j).epoch,40);
         stim = HMM_reborn2(tar(j).meta.correlationTime,tar(j).meta.seed, 10000,length(tar(j).epoch)/10000,5);
-        dwn_stim = downsample(stim,400);
+        dwn_stim = downsample(stim,40);
         [MI,MI_shuffled,t] = tsmi_clean(dwn_rsp,dwn_stim);
         figure
         plot(t,MI)

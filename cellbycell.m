@@ -3,14 +3,15 @@ close all
 clear all
 clc
 
-tar = 3;
+tar = 1;
 load('hmm_r.mat')
 load('ou_r.mat')
 %%
-type{1,1}= 'cone biploar';
-type{1,2}= 'cone biploar';
-type{1,3}= 'cone biploar';
-
+type{1,1}= '1';
+type{1,2}= '2';
+type{1,3}= '3';
+type{1,4}= '4';
+type{1,5}= '5';
 close all
 for cell_id = 1:length(type)
     figure('units','normalized','outerposition',[0 0 1 1])
@@ -38,7 +39,7 @@ for cell_id = 1:length(type)
             end
         end
     end
-    
+    if length(ou_r)~= 0
     for ou_i =1:size(ou_r,2)
         tempy = ou_r{1,ou_i};
         for ck = 1:length(tempy)
@@ -80,5 +81,7 @@ for cell_id = 1:length(type)
     title(['cell' num2str(cell_id) ' type ' type{1,cell_id}])
     xline(0,'-','DisplayName','zero time shift');
     saveas(gcf,['type' type{1,cell_id} 'cell' num2str(cell_id) '.jpg'])
-    
+    else
+        
+    end
 end
