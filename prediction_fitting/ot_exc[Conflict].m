@@ -29,17 +29,17 @@ for g_val = 1:2
         ntfilt = 1000;  % Try varying this, to see how performance changes!
         Stim = Stim';
         
-        g_x = -25:25;
+        g_x = -25:25;\
         g_y = gaussmf(g_x,[15 0]);
         
         pst_fr = zeros(1,(length(g_x)+length(fr)+(length(g_x))));%51 ms padding for the Gaussian
         for i = 1 : length(fr)
-            i
+            
             temp_fr = zeros(1,(length(g_x)+length(fr)+(length(g_x))));
             temp_fr((51+i-25):(51+i+25)) = fr(i)*g_y;
             pst_fr =  pst_fr+temp_fr;
         end
-        cv_fr = pst_fr(52:(52+length(fr)-1));
+        cv_fr = pst_fr(52:(52+100000-1));
         sr_pair = [Stim'; cv_fr];
         
         [x,fval,exitflag,output,population,score] = ot_LN_ga_main(sr_pair);
