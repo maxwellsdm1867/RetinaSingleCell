@@ -1,22 +1,5 @@
-%this is for generating the figures for one condition for one cell type
 close all
-clear all
-clc
-
-tar = 1;
-load('hmm_r.mat')
-load('ou_r.mat')
-%%
-type{1,1}= 'cone bipolar';
-type{1,2}= 'amarcine';
-type{1,3}= 'amarcine';
-type{1,4}= 'cone bipolar';
-type{1,5}= 'cone bipolar';
-type{1,6}= 'rod bipolar';
-type{1,7}= 'cone bipolar';
-type{1,8}= 'rod bipolar';
-type{1,9}= 'amarcine';
-close all
+%hmm only 
 for cell_id = 1:length(type)
     figure('units','normalized','outerposition',[0 0 1 1])
     hold on
@@ -43,32 +26,7 @@ for cell_id = 1:length(type)
             end
         end
     end
-    if length(ou_r)~= 0
-    for ou_i =1:size(ou_r,2)
-        tempy = ou_r{1,ou_i};
-        for ck = 1:length(tempy)
-            if tempy(ck).ID == cell_id
-                %plot(ou_r{3,1},tempy(ck).MI,'--','LineWidth',1.2,'Color',colors(ci,:))
-                sk = [sk 1];%1 is ou
-                parm = [parm ou_r{2,ou_i} ];
-            end
-        end
-    end
-    
-    n_colors = sum(sk==1);
-    colors = distinguishable_colors(n_colors);
-    ci = 0;
-    
-    for ou_i =1:size(ou_r,2)
-        tempy = ou_r{1,ou_i};
-        for ck = 1:length(tempy)
-            if tempy(ck).ID == cell_id
-                ci = ci+1;
-                plot(ou_r{3,1},tempy(ck).MI,'--','LineWidth',1.2,'Color',colors(ci,:))
-            end
-        end
-    end
-    tmpn = cell(1,length(parm));
+     tmpn = cell(1,length(parm));
     for n = 1:length(parm)
         if sk(n)== 0
             tmpn{1,n}= ['HMM,G=' num2str(parm(n)) ];
@@ -77,6 +35,7 @@ for cell_id = 1:length(type)
         end
     end
     legend(tmpn)
+   
     
     xlim([-2000 2000])
     hold off
@@ -85,7 +44,5 @@ for cell_id = 1:length(type)
     title(['cell' num2str(cell_id) ' type ' type{1,cell_id}])
     xline(0,'-','DisplayName','zero time shift');
     saveas(gcf,['type' type{1,cell_id} 'cell' num2str(cell_id) '.jpg'])
-    else
-        
-    end
+  
 end

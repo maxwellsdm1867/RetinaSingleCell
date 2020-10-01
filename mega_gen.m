@@ -1,5 +1,5 @@
 clear
-num_cell = 5;
+num_cell = 9;
 mega = cell(2,num_cell);
 for i = 1:num_cell
     [fileName, filePath ] = uigetfile('*.mat');
