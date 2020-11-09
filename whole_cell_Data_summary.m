@@ -98,10 +98,10 @@ if  isempty(hmmg_u)~= 1
         tar = raw_sorted{1,i};
         for j= 1:length(tar)
             sort_resp = sort_state(states,tar(j).epoch);
-            dwn_rsp = downsample(sort_resp,400);
+            dwn_rsp = downsample(sort_resp,100);
             %dwn_rsp = downsample(tar(j).epoch,400);
             stim = HMM_reborn2(tar(j).meta.correlationTime,tar(j).meta.seed, 10000,length(tar(j).epoch)/10000,5);
-            dwn_stim = downsample(stim,400);
+            dwn_stim = downsample(stim,100);
             [MI,t]= only_timeshift(dwn_stim,dwn_rsp,BinningSamplingRate);
             %[MI,MI_shuffled,t] = tsmi_clean(dwn_rsp,dwn_stim);
             
