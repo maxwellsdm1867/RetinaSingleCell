@@ -198,7 +198,7 @@ for cell_id = 1:length(type)
             tmpn{1,n}= ['OU,G=' num2str(parm(n)) ];
         end
     end
-    legend(tmpn)
+    legend(tmpn,'Location','northwest')
     xlim([-2000 2000])
     xlabel('time shift(ms)')
     ylabel('MI(in bits)')

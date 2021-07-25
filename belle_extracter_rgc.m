@@ -24,7 +24,7 @@ for i = 1:2
         stim = temp_g(j).stim;
         spikes = temp_g(j).spikes;
         ID =  temp_g(j).ID;
-        pre_name = ['HMM_g_' num2str(results{2,i}) '_t_' num2str(type(ID)) 'e_' num2str(j) '_' ];
+        pre_name = ['HMM_g_' num2str(results{2,i}) '_t_' num2str(type(ID)) '_cell_' num2str(ID) '_e_' num2str(j) '_' ];
         save([pre_name 'MI'],'MI')
         save([pre_name 'FR'],'FR')
         save([pre_name 'stim'],'stim')
@@ -49,7 +49,7 @@ for i = 1:2
         stim = temp_g(j).stim;
         spikes = temp_g(j).spikes;
         ID =  temp_g(j).ID;
-        pre_name = ['OU_g_' num2str(results{2,i}) '_t_' num2str(type(ID)) 'e_' num2str(j) '_' ];
+        pre_name = ['OU_g_' num2str(results{2,i}*10) '_t_' num2str(type(ID)) '_cell_' num2str(ID)  '_e_' num2str(j) '_' ];
         save([pre_name 'MI'],'MI')
         save([pre_name 'FR'],'FR')
         save([pre_name 'stim'],'stim')
