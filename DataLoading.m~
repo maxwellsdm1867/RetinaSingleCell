@@ -84,9 +84,8 @@ for num_pat = 1:node{1}.children.length %number of image patch
     end
     legend('100','10','1')
     hold off
-    cd('/Users/Arthur/Documents/RiekeLab/211005')
+    cd('/Users/Arthur/Documents/RiekeLab/210923')
     saveas(gcf,['im2patch' num2str(num_pat) '.jpg'])
-    close
 end
 
 
