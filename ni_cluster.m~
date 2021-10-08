@@ -43,7 +43,7 @@ dateSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, dateSp
 tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(imagePatchIndex)','protocolSettings(background:FilterWheel:NDF)'});
 
 
-gui = epochTreeGUI(tree);
+gui = epochTreeGUI(tree);%open gui
 %% extract the data to a cell, by each image patch and 
 node = gui.getSelectedEpochTreeNodes;%import the checked data
 %this data is grouped by cell->image ID->patch ID->light levels->epoches
@@ -87,14 +87,38 @@ tot_patch = cnt_psth-1;%number of patches
 %extract the hightest leight levels
 
 for i = 1:tot_patch
-    pre_clust(i,:) = psth_cabnet(i).r100;%data matrix for clustering 
+    pre_clust(i,:) = psth_cabnet(i).r100;%data matrix for clustering using the highest light level
 end
 
-coef_psth = pca(pre_clust);
+coef_psth = pca(pre_clust);% every column of coeff psth is coeff for one component
 
+%project to pc1 and pc2 
+p1 = coef_psth(:,1);%pc1
+p2 = coef_psth(:,2);%pc2
+p1_r = pre_clust*p1;
+p2_r = pre_clust*p2;
+figure
+scatter(p1_r,p2_r)
+xlabel('PC1')
+ylabel('PC2')
 
-
-
+%kmeans clustering in high dim and assign them to clusters, here we use the
+%elbow method
+klist=2:10;%the number of clusters you want to try
+myfunc = @(X,K)(kmeans(X, K));
+eva = evalclusters(pre_clust,myfunc,'CalinskiHarabasz','klist',klist);
+classes=kmeans(pre_clust,eva.OptimalK);%the id of each elements
+c_val = unique(classes);
+figure%scatter plot that 
+hold on
+for i = 1:length(c_val)
+    tp1 = p1_r(classes==i);
+    tp2 = p2_r(classes==i);
+    scatter(tp1,tp2)
+end
+hold off
+xlabel('pc1')
+ylabel('pc2')
 
 
 

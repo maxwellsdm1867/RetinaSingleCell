@@ -87,7 +87,7 @@ tot_patch = cnt_psth-1;%number of patches
 %extract the hightest leight levels
 
 for i = 1:tot_patch
-    pre_clust(i,:) = psth_cabnet(i).r100;%data matrix for clustering 
+    pre_clust(i,:) = psth_cabnet(i).r100;%data matrix for clustering using the highest light level
 end
 
 coef_psth = pca(pre_clust);% every column of coeff psth is coeff for one component
@@ -102,12 +102,34 @@ scatter(p1_r,p2_r)
 xlabel('PC1')
 ylabel('PC2')
 
-%kmeans clustering
+%kmeans clustering in high dim and assign them to clusters, here we use the
+%elbow method
+klist=2:10;%the number of clusters you want to try
+myfunc = @(X,K)(kmeans(X, K));
+eva = evalclusters(pre_clust,myfunc,'CalinskiHarabasz','klist',klist);
+classes=kmeans(pre_clust,eva.OptimalK);%the id of each elements
+c_val = unique(classes);
+figure%scatter plot that indicate different clusters
+hold on
+for i = 1:length(c_val)
+    tp1 = p1_r(classes==i);
+    tp2 = p2_r(classes==i);
+    scatter(tp1,tp2)
+end
+hold off
+xlabel('pc1')
+ylabel('pc2')
 
-
-
-
-
+for i = 1:length(c_val)
+    figure
+    hold on
+   for pat_id = 1:tot_patch
+       if classes(pat_id) == i
+           plot(psth_cabnet(pat_id).r100)
+       end
+   end
+   hold off
+end
 
 
 
