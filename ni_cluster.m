@@ -46,6 +46,7 @@ tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.la
 gui = epochTreeGUI(tree);%open gui
 %% extract the data to a cell, by each image patch and 
 node = gui.getSelectedEpochTreeNodes;%import the checked data
+%
 %this data is grouped by cell->image ID->patch ID->light levels->epoches
 cnt_psth = 1; %index for the struct 
 for image_id = 1:node{1}.children.length %number of image
@@ -87,20 +88,20 @@ tot_patch = cnt_psth-1;%number of patches
 %extract the hightest leight levels
 
 for i = 1:tot_patch
-    pre_clust(i,:) = psth_cabnet(i).r100;%data matrix for clustering using the highest light level
+    pre_clust(i,:) = psth_cabnet(i).r001;%data matrix for clustering using the highest light level
 end
 
 coef_psth = pca(pre_clust);% every column of coeff psth is coeff for one component
-
+close all
 %project to pc1 and pc2 
 p1 = coef_psth(:,1);%pc1
 p2 = coef_psth(:,2);%pc2
 p1_r = pre_clust*p1;
 p2_r = pre_clust*p2;
-figure
-scatter(p1_r,p2_r)
-xlabel('PC1')
-ylabel('PC2')
+% figure
+% scatter(p1_r,p2_r)
+% xlabel('PC1')
+% ylabel('PC2')
 
 %kmeans clustering in high dim and assign them to clusters, here we use the
 %elbow method
@@ -109,6 +110,16 @@ myfunc = @(X,K)(kmeans(X, K));
 eva = evalclusters(pre_clust,myfunc,'CalinskiHarabasz','klist',klist);
 classes=kmeans(pre_clust,eva.OptimalK);%the id of each elements
 c_val = unique(classes);
+for i = 1:length(c_val)
+    figure
+    hold on
+   for pat_id = 1:tot_patch
+       if classes(pat_id) == i
+           plot(psth_cabnet(pat_id).r001)
+       end
+   end
+   hold off
+end
 figure%scatter plot that indicate different clusters
 hold on
 for i = 1:length(c_val)
@@ -120,16 +131,11 @@ hold off
 xlabel('pc1')
 ylabel('pc2')
 
-for i = 1:length(c_val)
-    figure
-    hold on
-   for pat_id = 1:tot_patch
-       if classes(pat_id) == i
-           plot(psth_cabnet(pat_id).r100)
-       end
-   end
-   hold off
-end
+%% overwriting scsatter plot and find their relations 
+% for i = 1:60
+%     psth_cabnet(i).r001c = classes(i);
+% end
+
 
 
 
