@@ -2,7 +2,9 @@
 %*************************************************************************
 % Initializations
 %*************************************************************************
-
+close all
+clear all
+clc
 
 % define plot color sequence, axis fonts
 PlotColors = 'bgrkymcbgrkymcbgrkymcbgrkymc';
@@ -39,22 +41,23 @@ params.rootDir = '~/LargeCells/';
 %%
 %*************************************************************************
 %*************************************************************************
-list = loader.loadEpochList([exportFolder 'test.mat'], dataFolder);
+list = loader.loadEpochList([exportFolder 'doves_rotaion.mat'], dataFolder);
 
 dateSplit = @(list)splitOnExperimentDate(list);
 dateSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, dateSplit);
 
-tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(imagePatchIndex)','protocolSettings(background:FilterWheel:NDF)'});
+tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(background:FilterWheel:NDF)'});
 
 gui = epochTreeGUI(tree);
 
 %%
+%choose one cell to be one node
 node = gui.getSelectedEpochTreeNodes;%import the checked data
 
 
 %%
 % data = riekesuite.getResponseMatrix(node{1}.epochList, params.Amp);
-% 
+%
 % %%
 % for child = 1:node{1}.children.length
 %     data = riekesuite.getResponseMatrix(node{1}.children(child).epochList, params.Amp);
@@ -64,29 +67,61 @@ node = gui.getSelectedEpochTreeNodes;%import the checked data
 % end
 
 %% plot the averge responce(psth) of each patch number on different levels
-%the data sceletion is based on image patch, not cell ID
+
 clc
-for num_pat = 1:node{1}.children.length %number of image patch
+for num_pat = 1:node{1}.children.length %number of movie clip
     figure
     hold on
+    avg_psth = zeros(node{1}.children(1).children.length,675);
     for lightLevel = 1:node{1}.children(1).children.length% DIFFERENT LIGHT LEVEL
         data = riekesuite.getResponseMatrix(node{1}.children(num_pat).children(lightLevel).epochList, params.Amp);%GET RAW DATA
         %spike detection and binning here
-        temp_psth = zeros(1,100);
+        stim_dur = size(data,2)/10000;%stimulus length in time(sec)
+        bin_interval = 0.010;
+        temp_psth = zeros(1,stim_dur/bin_interval);
         for i = 1:size(data,1)
             spike_time = spike_detection(data(i,:))/10000;
-            [BinningSpike] = BinSpk1(0.010,spike_time,1);
+            [BinningSpike] = BinSpk1(bin_interval,spike_time,stim_dur);
             temp_psth = temp_psth+BinningSpike;
         end
         size(data,1)
-        psth = temp_psth/size(data,1);
+        psth = temp_psth/size(data,1);%averge psth for each light level
         plot(psth)
+        avg_psth(lightLevel,:)= psth; %get the average response for scatter
+        %and normalization
     end
     
     legend('100','10','1')
     hold off
-    cd('/Users/Arthur/Documents/RiekeLab/211104')
-    saveas(gcf,['NIF_im1patch' num2str(num_pat) '.jpg'])
+    cd('/Users/Arthur/Documents/RiekeLab/211026')
+    saveas(gcf,['dove' num2str(num_pat) '.jpg'])
+    lvs = size(avg_psth,1);
+    close
+    %plot normailzed psth
+    figure
+    hold on
+    for i = 1:lvs
+        t_psth = avg_psth(i,:)/max(avg_psth(i,:));
+        plot(t_psth)
+    end
+    legend('100','10','1')
+    hold off
+    xlabel('normilzed psth')
+    saveas(gcf,['dove_nor' num2str(num_pat) '.jpg'])
+    
+    
+    
+    %scatter plot for the phase diagram
+    figure
+    %     subplot(1,2,1)
+    %     scatter(avg_psth(3,:),avg_psth(2,:))
+    %     xlabel('resp @ 1 r*')
+    %     ylabel('resp @ 10 r*')
+    %     subplot(1,2,2)
+    scatter(avg_psth(2,:),avg_psth(1,:))
+    xlabel('resp @ 10 r*')
+    ylabel('resp @ 100 r*')
+    saveas(gcf,['doveScatter' num2str(num_pat) '.jpg'])
     close
 end
 

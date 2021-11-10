@@ -4,8 +4,9 @@ close all
 clear all
 clc
 %load('/Users/Arthur/Documents/RiekeLab/210923/210923cabnet.mat')%on_s
-load('/Users/Arthur/Documents/RiekeLab/211005/211005cabnet.mat')%off_s
-for i = 1:60
+%load('/Users/Arthur/Documents/RiekeLab/211005/211005cabnet.mat')%off_s
+load('/Users/Arthur/Documents/RiekeLab/211026/211026cabnet.mat')%on_t
+for i = 1:30
     clus_id(i,1) = psth_cabnet(i).r100c;
     clus_id(i,2) = psth_cabnet(i).r010c;
     clus_id(i,3) = psth_cabnet(i).r001c;
@@ -24,7 +25,7 @@ lut2.Values
 tar =2;
 figure
 hold on
-for i = 1:60
+for i = 1:30
     if psth_cabnet(i).r100c == tar 
         plot(psth_cabnet(i).r100)
     end
