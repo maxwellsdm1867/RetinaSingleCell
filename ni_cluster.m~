@@ -46,7 +46,8 @@ tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.la
 gui = epochTreeGUI(tree);%open gui
 %% extract the data to a cell, by each image patch and
 %this requires a rewrite where we need to label it and save the cluster id
-node = gui.getSelectedEpochTreeNodes;%import the checked data
+
+node = gui.getSelectedEpochTreeNodes;%chosees a cell ID
 %
 %this data is grouped by cell->image ID->patch ID->light levels->epoches
 cnt_psth = 1; %index for the struct
@@ -79,12 +80,14 @@ for image_id = 1:node{1}.children.length %number of image
         cnt_psth = cnt_psth+1;% only need to advance the count when
     end
 end
-%% PCA and kmeas clustering
+
+
+% PCA and kmeas clustering
 %coeff = pca(X) returns the principal component coefficients, also known as loadings,
 %for the n-by-p data matrix X. Rows of X correspond to observations and columns correspond to variables.
 %The coefficient matrix is p-by-p. Each column of coeff contains coefficients for one principal component,
 %and the columns are in descending order of component variance.
-cd('/Users/Arthur/Documents/RiekeLab/211104') %directory of saved fiugres
+cd('/Users/Arthur/Documents/RiekeLab/211014') %directory of saved fiugres
 tot_patch = cnt_psth-1;%number of patches
 %extract the hightest leight levels
 light_level_id = ['r100';'r010';'r001'];
@@ -141,7 +144,126 @@ for exc = 1:3
         eval(['psth_cabnet(i).' light_level_id(exc,:) 'c = classes(i)']);
     end
 end
+for i = 1:length(classes)
+    psth_cabnet(i).evo = psth_cabnet(i).r100c+psth_cabnet(i).r010c*10+psth_cabnet(i).r001c*100);%low mid high
+end
 save('psth_cabnet','psth_cabnet')
+for i = 1:length(psth_cabnet)
+    clus_id(i,1) = psth_cabnet(i).r100c;
+    clus_id(i,2) = psth_cabnet(i).r010c;
+    clus_id(i,3) = psth_cabnet(i).r001c;
+end
+close all
+figure
+lut1 = histogram2(clus_id(:,2),clus_id(:,1));
+xlabel('10r* cluster id')
+ylabel('100r* cluster id')
+figure
+lut2 = histogram2(clus_id(:,3),clus_id(:,2));
+xlabel('1r* cluster id')
+ylabel('10r* cluster id')
+ten_to_100 = lut1.Values
+one_to_10 = lut2.Values
+tar =2;
+%they ususally haVe good correspondence wrt Each other
+[m1, i1] = max(one_to_10);
+[m2, i2] = max(ten_to_100);
+ids = [1:2;i1;i2];
+tag1 = num2str(100*ids(1,1)+10*ids(2,1)+ids(3,1));
+tag2 = 121;%num2str(100*ids(1,2)+10*ids(2,2)+ids(3,2));
+class1_h = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+class2_h = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+class1_m = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+class2_m = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+class1_l = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+class2_l = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
 
+c1_c = 0;
+c2_c = 0;
+for patch = 1:length(psth_cabnet)
+    if psth_cabnet(patch).evo == tag1
+        class1_h = class1_h + psth_cabnet(patch).r100;
+        class1_m = class1_m + psth_cabnet(patch).r010;
+        class1_l = class1_l + psth_cabnet(patch).r001;
+        c1_c = c1_c+1;
+    elseif psth_cabnet(patch).evo == tag2
+        class2_h = class2_h + psth_cabnet(patch).r100;
+        class2_m = class2_m + psth_cabnet(patch).r010;
+        class2_l = class2_l + psth_cabnet(patch).r001;
+        c2_c = c2_c+1;
+    end
+    
+end
+class1_h = class1_h/c1_c;
+class1_m = class1_m/c1_c;
+class1_l = class1_l/c1_c;
 
+class2_h = class2_h/c2_c;
+class2_m = class2_m/c2_c;
+class2_l = class2_l/c2_c;
 
+for i = 1:2
+    figure
+    hold on
+    eval(['plot(class' num2str(i) '_h)'])
+    eval(['plot(class' num2str(i) '_m)'])
+    eval(['plot(class' num2str(i) '_l)'])
+    title(['class' num2str(i)])
+    hold off
+    legend('100r*','10r*','1r*')
+    saveas(gcf,['group' num2str(i) '.jpg'])
+end
+% %%
+% tagz = 3;
+% tag1 = '211';
+% tag2 = '122';
+% tag3 = '123';
+% for i = 1:tagz
+%     eval(['class' num2str(i) '_h = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));'])
+%     eval(['class' num2str(i) '_m = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));'])
+%     eval(['class' num2str(i) '_l = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));'])
+% end
+% 
+% c1_c = 0;
+% c2_c = 0;
+% c3_c = 0;
+% for i = 1:tagz
+%     
+%     for patch = 1:length(psth_cabnet)
+%         if psth_cabnet(patch).evo == tag1
+%             class1_h = class1_h + psth_cabnet(patch).r100;
+%             class1_m = class1_m + psth_cabnet(patch).r010;
+%             class1_l = class1_l + psth_cabnet(patch).r001;
+%             c1_c = c1_c+1;
+%         elseif psth_cabnet(patch).evo == tag2
+%             class2_h = class2_h + psth_cabnet(patch).r100;
+%             class2_m = class2_m + psth_cabnet(patch).r010;
+%             class2_l = class2_l + psth_cabnet(patch).r001;
+%             c2_c = c2_c+1;
+%         elseif psth_cabnet(patch).evo == tag3
+%             class3_h = class3_h + psth_cabnet(patch).r100;
+%             class3_m = class3_m + psth_cabnet(patch).r010;
+%             class3_l = class3_l + psth_cabnet(patch).r001;
+%             c3_c = c3_c+1;
+%         end
+%         
+%     end
+% end
+% for i = 1:tagz
+%     eval(['class' num2str(i) '_h = class' num2str(i) '_h/c' num2str(i) '_c;'])
+%     eval(['class' num2str(i) '_m = class' num2str(i) '_m/c' num2str(i) '_c;'])
+%     eval(['class' num2str(i) '_l = class' num2str(i) '_l/c' num2str(i) '_c;'])
+%     
+% end
+% for i = 1:tagz
+%     figure
+%     hold on
+%     eval(['plot(class' num2str(i) '_h)'])
+%     eval(['plot(class' num2str(i) '_m)'])
+%     eval(['plot(class' num2str(i) '_l)'])
+%     eval(['title(['class' tag])])
+%     hold off
+%     legend('100r*','10r*','1r*')
+%     saveas(gcf,['group' num2str(i) '.jpg'])
+%     
+% end

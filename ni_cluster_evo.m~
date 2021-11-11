@@ -1,6 +1,5 @@
 %ni_cluster evolution
-%see how response to one image patch
-%struct is not the best way to store stuffs
+%see how response to one image patch cha
 close all
 clear all
 clc
