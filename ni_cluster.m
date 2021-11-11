@@ -80,14 +80,14 @@ for image_id = 1:node{1}.children.length %number of image
         cnt_psth = cnt_psth+1;% only need to advance the count when
     end
 end
-
+%
 
 % PCA and kmeas clustering
 %coeff = pca(X) returns the principal component coefficients, also known as loadings,
 %for the n-by-p data matrix X. Rows of X correspond to observations and columns correspond to variables.
 %The coefficient matrix is p-by-p. Each column of coeff contains coefficients for one principal component,
 %and the columns are in descending order of component variance.
-cd('/Users/Arthur/Documents/RiekeLab/211014') %directory of saved fiugres
+cd('/Users/Arthur/Documents/RiekeLab/210923') %directory of saved fiugres
 tot_patch = cnt_psth-1;%number of patches
 %extract the hightest leight levels
 light_level_id = ['r100';'r010';'r001'];
@@ -97,17 +97,13 @@ for exc = 1:3
     end
     
     coef_psth = pca(pre_clust);% every column of coeff psth is coeff for one component
-    close all
     %project to pc1 and pc2
     p1 = coef_psth(:,1);%pc1
     p2 = coef_psth(:,2);%pc2
     p1_r = pre_clust*p1;
     p2_r = pre_clust*p2;
-    % figure
-    % scatter(p1_r,p2_r)
-    % xlabel('PC1')
-    % ylabel('PC2')
-    
+    ok = 0;
+   while ok == 0
     %kmeans clustering in high dim and assign them to clusters, here we use the
     %elbow method
     klist=2:10;%the number of clusters you want to try
@@ -138,23 +134,32 @@ for exc = 1:3
     hold off
     xlabel('pc1')
     ylabel('pc2')
+    ok = input('ok?');
+   end
+    
+    
+    
     saveas(gca,['NIF_' light_level_id(exc,:) 'cluster_scatter' num2str(i) '.jpg'])
     %% overwriting scsatter plot and find their relations
     for i = 1:length(classes)
         eval(['psth_cabnet(i).' light_level_id(exc,:) 'c = classes(i)']);
     end
 end
+evos = [];
 for i = 1:length(classes)
     psth_cabnet(i).evo = psth_cabnet(i).r100c+psth_cabnet(i).r010c*10+psth_cabnet(i).r001c*100;%low mid high
+    evos = [evos psth_cabnet(i).r100c+psth_cabnet(i).r010c*10+psth_cabnet(i).r001c*100];
 end
-%start from here 
+
 save('psth_cabnet','psth_cabnet')
+
+%correspondence
 for i = 1:length(psth_cabnet)
     clus_id(i,1) = psth_cabnet(i).r100c;
     clus_id(i,2) = psth_cabnet(i).r010c;
     clus_id(i,3) = psth_cabnet(i).r001c;
 end
-close all
+
 figure
 lut1 = histogram2(clus_id(:,2),clus_id(:,1));
 xlabel('10r* cluster id')
@@ -165,106 +170,56 @@ xlabel('1r* cluster id')
 ylabel('10r* cluster id')
 ten_to_100 = lut1.Values
 one_to_10 = lut2.Values
-tar =2;
-%they ususally haVe good correspondence wrt Each other
-[m1, i1] = max(one_to_10);
-[m2, i2] = max(ten_to_100);
-ids = [1:2;i1;i2];
-tag1 = num2str(100*ids(1,1)+10*ids(2,1)+ids(3,1));
-tag2 = 121;%num2str(100*ids(1,2)+10*ids(2,2)+ids(3,2));
-class1_h = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
-class2_h = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
-class1_m = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
-class2_m = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
-class1_l = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
-class2_l = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
 
-c1_c = 0;
-c2_c = 0;
-for patch = 1:length(psth_cabnet)
-    if psth_cabnet(patch).evo == tag1
-        class1_h = class1_h + psth_cabnet(patch).r100;
-        class1_m = class1_m + psth_cabnet(patch).r010;
-        class1_l = class1_l + psth_cabnet(patch).r001;
-        c1_c = c1_c+1;
-    elseif psth_cabnet(patch).evo == tag2
-        class2_h = class2_h + psth_cabnet(patch).r100;
-        class2_m = class2_m + psth_cabnet(patch).r010;
-        class2_l = class2_l + psth_cabnet(patch).r001;
-        c2_c = c2_c+1;
-    end
-    
+
+evos_count = unique(evos);
+evo_track = zeros(2,length(evos_count));
+figure
+hold on
+for i = 1:length(evos_count)
+    temp_a = length(find(evos==evos_count(i)));
+    evo_track(1,i)= evos_count(i);%id number
+    evo_track(2,i)= temp_a;%id number
+    scatter(temp_a/length(classes),evos_count(i))%scatter the percentage and use this to make decision
 end
-class1_h = class1_h/c1_c;
-class1_m = class1_m/c1_c;
-class1_l = class1_l/c1_c;
-
-class2_h = class2_h/c2_c;
-class2_m = class2_m/c2_c;
-class2_l = class2_l/c2_c;
-
-for i = 1:2
+hold off
+evos_to_consider = input('how many evos you want?')%input the number that we want;
+%this is getting the first to nth largest population
+evo_track_m = evo_track;%create a mirror to evo_track
+evo_final = [];%the evo names we want to keep
+evo_final_cnt = [];%the evo count under same names
+for i = 1:evos_to_consider
+    [m1,i1]= max(evo_track_m(2,:));
+    evo_final = [evo_final evo_track_m(1,i1)];
+    evo_final_cnt = [evo_final_cnt evo_track_m(2,i1)];
+    evo_track_m(2,i1) = -99;
+end
+class1_h = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+class1_m = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+class1_l = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));
+%plot the average of each evos
+for i = 1:evos_to_consider
+    tar = evo_final(i);
+    tar_cnt = evo_final_cnt(i);
+    for patch = 1:length(psth_cabnet)
+        if psth_cabnet(patch).evo == tar
+            class1_h = class1_h + psth_cabnet(patch).r100;
+            class1_m = class1_m + psth_cabnet(patch).r010;
+            class1_l = class1_l + psth_cabnet(patch).r001;
+        end
+        
+    end
+    class1_h = class1_h/tar_cnt;
+    class1_m = class1_m/tar_cnt;
+    class1_l = class1_l/tar_cnt;
     figure
-    hold on
-    eval(['plot(class' num2str(i) '_h)'])
-    eval(['plot(class' num2str(i) '_m)'])
-    eval(['plot(class' num2str(i) '_l)'])
-    title(['class' num2str(i)])
+    hold on 
+    plot(class1_h)
+    plot(class1_m)
+    plot(class1_l)
     hold off
     legend('100r*','10r*','1r*')
-    saveas(gcf,['group' num2str(i) '.jpg'])
+    title(['percentage ' num2str(tar_cnt/tot_patch) ' evolution of ' num2str(tar)])
+    saveas(gca,['evolution of ' num2str(tar) '.jpg'])
 end
-% %%
-% tagz = 3;
-% tag1 = '211';
-% tag2 = '122';
-% tag3 = '123';
-% for i = 1:tagz
-%     eval(['class' num2str(i) '_h = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));'])
-%     eval(['class' num2str(i) '_m = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));'])
-%     eval(['class' num2str(i) '_l = zeros(size(psth_cabnet(1).r100,1),size(psth_cabnet(1).r100,2));'])
-% end
-% 
-% c1_c = 0;
-% c2_c = 0;
-% c3_c = 0;
-% for i = 1:tagz
-%     
-%     for patch = 1:length(psth_cabnet)
-%         if psth_cabnet(patch).evo == tag1
-%             class1_h = class1_h + psth_cabnet(patch).r100;
-%             class1_m = class1_m + psth_cabnet(patch).r010;
-%             class1_l = class1_l + psth_cabnet(patch).r001;
-%             c1_c = c1_c+1;
-%         elseif psth_cabnet(patch).evo == tag2
-%             class2_h = class2_h + psth_cabnet(patch).r100;
-%             class2_m = class2_m + psth_cabnet(patch).r010;
-%             class2_l = class2_l + psth_cabnet(patch).r001;
-%             c2_c = c2_c+1;
-%         elseif psth_cabnet(patch).evo == tag3
-%             class3_h = class3_h + psth_cabnet(patch).r100;
-%             class3_m = class3_m + psth_cabnet(patch).r010;
-%             class3_l = class3_l + psth_cabnet(patch).r001;
-%             c3_c = c3_c+1;
-%         end
-%         
-%     end
-% end
-% for i = 1:tagz
-%     eval(['class' num2str(i) '_h = class' num2str(i) '_h/c' num2str(i) '_c;'])
-%     eval(['class' num2str(i) '_m = class' num2str(i) '_m/c' num2str(i) '_c;'])
-%     eval(['class' num2str(i) '_l = class' num2str(i) '_l/c' num2str(i) '_c;'])
-%     
-% end
-% for i = 1:tagz
-%     figure
-%     hold on
-%     eval(['plot(class' num2str(i) '_h)'])
-%     eval(['plot(class' num2str(i) '_m)'])
-%     eval(['plot(class' num2str(i) '_l)'])
-%     eval(['title(['class' tag])])
-%     hold off
-%     legend('100r*','10r*','1r*')
-%     saveas(gcf,['group' num2str(i) '.jpg'])
-%     
-% end
+
