@@ -40,12 +40,18 @@ list = loader.loadEpochList([exportFolder 'test.mat'], dataFolder);
 dateSplit = @(list)splitOnExperimentDate(list);
 dateSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, dateSplit);
 
-tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(imagePatchIndex)','protocolSettings(background:FilterWheel:NDF)'});
+cellTypeSplit = @(list)splitOnCellType(list);
+cellTypeSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, cellTypeSplit);
+tree = riekesuite.analysis.buildTree(list, {cellTypeSplit_java, dateSplit_java,'protocolID','protocolSettings(apertureDiameter)','cell.label','protocolSettings(imagePatchIndex)','protocolSettings(background:FilterWheel:NDF)'});
+%tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(imagePatchIndex)','protocolSettings(background:FilterWheel:NDF)'});
 
 
 gui = epochTreeGUI(tree);%open gui
 %% extract the data to a cell, by each image patch and
 %this requires a rewrite where we need to label it and save the cluster id
+
+cd('/Users/Arthur/Documents/RiekeLab/twmp') %directory of saved fiugres
+
 
 node = gui.getSelectedEpochTreeNodes;%chosees a cell ID
 %
@@ -87,7 +93,7 @@ end
 %for the n-by-p data matrix X. Rows of X correspond to observations and columns correspond to variables.
 %The coefficient matrix is p-by-p. Each column of coeff contains coefficients for one principal component,
 %and the columns are in descending order of component variance.
-cd('/Users/Arthur/Documents/RiekeLab/210923') %directory of saved fiugres
+
 tot_patch = cnt_psth-1;%number of patches
 %extract the hightest leight levels
 light_level_id = ['r100';'r010';'r001'];
