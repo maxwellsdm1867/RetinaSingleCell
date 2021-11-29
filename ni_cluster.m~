@@ -53,10 +53,8 @@ gui = epochTreeGUI(tree);%open gui
 %this requires a rewrite where we need to label it and save the cluster id
 
 
-datz = '211026';
-tpyz = 'onT';
-
-
+datz = '210923';
+tpyz = 'onS';
 
 node = gui.getSelectedEpochTreeNodes;%chosees a cell ID
 
@@ -84,13 +82,12 @@ for image_id = 1:node{1}.children.length %number of image
             data = riekesuite.getResponseMatrix(node{1}.children(image_id).children(patch_id).children(light_levels).epochList, params.Amp);
             %compute psth
             temp_psth = zeros(1,100);%reset psth for each light level
-            psth_cabnet(cnt_psth).imageStats = imageStats;%save the image stats
             for i = 1:size(data,1)
                 spike_time = spike_detection(data(i,:))/10000;%soike detection
                 [BinningSpike] = BinSpk1(0.010,spike_time,1);% bin the spike to get firing rate
                 temp_psth = temp_psth+BinningSpike;% addtion for later averge
             end
-            
+            psth_cabnet(cnt_psth).imageStats = imageStats;%save the image stats
             psth = temp_psth/size(data,1);%average spikes
             %spilt the psth in thir corresponing light levels
             if light_levels == 1% light level is 100r*/sec
@@ -108,7 +105,7 @@ for image_id = 1:node{1}.children.length %number of image
         cnt_psth = cnt_psth+1;% only need to advance the count when
     end
 end
-%
+%%
 
 % PCA and kmeas clustering
 %coeff = pca(X) returns the principal component coefficients, also known as loadings,
@@ -131,7 +128,7 @@ for exc = 1:3
     p1_r = pre_clust*p1;
     p2_r = pre_clust*p2;
     ok = 0;
-    while ok ~= 1
+    while ok == 0
         %kmeans clustering in high dim and assign them to clusters, here we use the
         %elbow method
         klist=2:10;%the number of clusters you want to try
