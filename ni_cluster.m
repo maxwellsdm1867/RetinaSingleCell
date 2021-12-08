@@ -45,7 +45,7 @@ cellTypeSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, ce
 tree = riekesuite.analysis.buildTree(list, {cellTypeSplit_java, dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(imagePatchIndex)','protocolSettings(background:FilterWheel:NDF)'});
 %tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.label','protocolSettings(imagePatchIndex)','protocolSettings(background:FilterWheel:NDF)'});
 
-cd('/Users/Arthur/Documents/RiekeLab/cell_type_summary') %directory of saved fiugres
+cd('/Users/Arthur/Documents/RiekeLab/celltype_3') %directory of saved fiugres
 
 
 gui = epochTreeGUI(tree);%open gui
@@ -53,12 +53,12 @@ gui = epochTreeGUI(tree);%open gui
 %this requires a rewrite where we need to label it and save the cluster id
 
 
-datz = '211026';
-tpyz = 'onT';
+datz = '211014';
+tpyz = 'offT';
 
-
-
-node = gui.getSelectedEpochTreeNodes;%chosees a cell ID
+spike_view = true;
+thres = 3.2;
+%node = gui.getSelectedEpochTreeNodes;%chosees a cell ID
 
 
 %image pathch extraction
@@ -70,7 +70,7 @@ params.rfSigmaCenter = node{1}.epochList.elements(1).protocolSettings.get('apert
 
 %this data is grouped by cell->image ID->patch ID->light levels->epoches
 cnt_psth = 1; %index for the struct
-for image_id = 1:node{1}.children.length %number of image
+for image_id = 1%:node{1}.children.length %number of image
     for patch_id = 1:node{1}.children(1).children.length %identifer of the image in each patch
         
         
@@ -86,8 +86,13 @@ for image_id = 1:node{1}.children.length %number of image
             temp_psth = zeros(1,100);%reset psth for each light level
             psth_cabnet(cnt_psth).imageStats = imageStats;%save the image stats
             for i = 1:size(data,1)
-                spike_time = spike_detection(data(i,:))/10000;%soike detection
-                [BinningSpike] = BinSpk1(0.010,spike_time,1);% bin the spike to get firing rate
+         
+                %spike_time = spike_detection(data(i,:))/10000;%soike detection
+                fnt = ['sdch_im_' num2str(image_id) '_patch_' num2str(patch_id) '_lv_' num2str(light_levels) '_rpt_' num2str(i)];
+               % [spike_time, SpikeAmplitudes, RefractoryViolations] = Detector1(data(i,:));%,'CheckDetection',true);
+                %[spike_time, SpikeAmplitudes, RefractoryViolations] = Detector1(data(i,:),fnt,'CheckDetection',true);
+                spike_time = spike_detection(data(i,:),thres,fnt,spike_view);
+                [BinningSpike] = BinSpk1(0.010,spike_time/10000,1);% bin the spike to get firing rate
                 temp_psth = temp_psth+BinningSpike;% addtion for later averge
             end
             
@@ -254,3 +259,4 @@ for i = 1:evos_to_consider
     saveas(gca,['ev_' tpyz '_' datz '_' num2str(tar) '.jpg'])
 end
 
+clear psth_cabnet

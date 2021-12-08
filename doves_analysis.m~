@@ -41,14 +41,12 @@ params.rootDir = '~/LargeCells/';
 %
 %*************************************************************************
 %*************************************************************************
-list = loader.loadEpochList([exportFolder 'doves_s_size.mat'], dataFolder);
+list = loader.loadEpochList([exportFolder 'doves120.mat'], dataFolder);
 
 dateSplit = @(list)splitOnExperimentDate(list);
 dateSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, dateSplit);
-cellTypeSplit = @(list)splitOnCellType(list);
-cellTypeSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, cellTypeSplit);
 
-tree = riekesuite.analysis.buildTree(list, {cellTypeSplit_java,dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(background:FilterWheel:NDF)'});
+tree = riekesuite.analysis.buildTree(list, {dateSplit_java,'protocolID','cell.label','protocolSettings(imageName)','protocolSettings(background:FilterWheel:NDF)'});
 
 gui = epochTreeGUI(tree);
 
@@ -57,7 +55,7 @@ gui = epochTreeGUI(tree);
 node = gui.getSelectedEpochTreeNodes;%import the checked data
 
 
-%
+%%
 % data = riekesuite.getResponseMatrix(node{1}.epochList, params.Amp);
 %
 % %%
@@ -69,11 +67,7 @@ node = gui.getSelectedEpochTreeNodes;%import the checked data
 % end
 
 %% plot the averge responce(psth) of each patch number on different levels
-thres = 4;%std threshold 
-spike_view = true;
-sd = '/Users/Arthur/Documents/RiekeLab/DOVEs';
-datz = '211019';
-cell_type = 'offS';
+
 clc
 for num_pat = 1:node{1}.children.length %number of movie clip
     figure
@@ -86,9 +80,10 @@ for num_pat = 1:node{1}.children.length %number of movie clip
         bin_interval = 0.010;
         temp_psth = zeros(1,stim_dur/bin_interval);
         for i = 1:size(data,1)
-           fnt = 'test'
+           
             spike_time = spike_detection(data(i,:),thres,fnt,spike_view);
-            [BinningSpike] = BinSpk1(bin_interval,spike_time/10000,stim_dur);
+            [BinningSpike] = BinSpk1(0.010,spike_time/10000,1);% bin the spike to get firing rate
+            [BinningSpike] = BinSpk1(bin_interval,spike_time,stim_dur);
             temp_psth = temp_psth+BinningSpike;
         end
         size(data,1)
@@ -100,7 +95,7 @@ for num_pat = 1:node{1}.children.length %number of movie clip
     
     legend('100','10','1')
     hold off
-    cd(sd)
+    cd('/Users/Arthur/Documents/RiekeLab/211026')
     saveas(gcf,['120dove' num2str(num_pat) '.jpg'])
     lvs = size(avg_psth,1);
     close
@@ -113,8 +108,8 @@ for num_pat = 1:node{1}.children.length %number of movie clip
     end
     legend('100','10','1')
     hold off
-    xlabel(sd)
-    saveas(gcf,['doves_' cell_type '_' datz '_' num2str(num_pat) '.jpg'])%and this is the off transient on tuesday
+    xlabel('normilzed psth')
+    saveas(gcf,['120dove_nor' num2str(num_pat) '.jpg'])%and this is the off transient on tuesday
     close
     
     

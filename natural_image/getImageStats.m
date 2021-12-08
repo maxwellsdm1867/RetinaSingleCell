@@ -36,7 +36,7 @@ function imageStats = getImageStats(node, params)
     for CurNode = 1:length(node)
         ImagePatch = sampledPatches.images{CurNode};
         ImagePatch(:) = (ImagePatch(:) - backgroundIntensity)/backgroundIntensity;
-        if (params.subunitFlag)
+        if (params.subunitFlag)%this is the subunit filter
             ImagePatch = conv2(ImagePatch, SubunitFilter, 'same');    
         end
         imageStats.meanPatch(CurNode) = mean(ImagePatch(Indices));
