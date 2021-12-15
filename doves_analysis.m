@@ -41,7 +41,7 @@ params.rootDir = '~/LargeCells/';
 %
 %*************************************************************************
 %*************************************************************************
-list = loader.loadEpochList([exportFolder 'doves_s_size.mat'], dataFolder);
+list = loader.loadEpochList([exportFolder 'doves_2000.mat'], dataFolder);
 
 dateSplit = @(list)splitOnExperimentDate(list);
 dateSplit_java = riekesuite.util.SplitValueFunctionAdapter.buildMap(list, dateSplit);
@@ -52,28 +52,13 @@ tree = riekesuite.analysis.buildTree(list, {cellTypeSplit_java,dateSplit_java,'p
 
 gui = epochTreeGUI(tree);
 
-%%
-%choose one cell to be one node
-node = gui.getSelectedEpochTreeNodes;%import the checked data
-
-
-%
-% data = riekesuite.getResponseMatrix(node{1}.epochList, params.Amp);
-%
-% %%
-% for child = 1:node{1}.children.length
-%     data = riekesuite.getResponseMatrix(node{1}.children(child).epochList, params.Amp);
-%     figure(3); clf
-%     plot(data(1, :));
-%     pause(2);
-% end
-
 %% plot the averge responce(psth) of each patch number on different levels
-thres = 4;%std threshold 
+node = gui.getSelectedEpochTreeNodes;
+thres = 4;%std threshold
 spike_view = true;
 sd = '/Users/Arthur/Documents/RiekeLab/DOVEs';
-datz = '211019';
-cell_type = 'offS';
+datz = '211026';
+cell_type = 'onT_zz';
 clc
 for num_pat = 1:node{1}.children.length %number of movie clip
     figure
@@ -86,12 +71,11 @@ for num_pat = 1:node{1}.children.length %number of movie clip
         bin_interval = 0.010;
         temp_psth = zeros(1,stim_dur/bin_interval);
         for i = 1:size(data,1)
-           fnt = 'test'
+            fnt = 'test';%just the place holder
             spike_time = spike_detection(data(i,:),thres,fnt,spike_view);
             [BinningSpike] = BinSpk1(bin_interval,spike_time/10000,stim_dur);
             temp_psth = temp_psth+BinningSpike;
         end
-        size(data,1)
         psth = temp_psth/size(data,1);%averge psth for each light level
         plot(psth)
         avg_psth(lightLevel,:)= psth; %get the average response for scatter
@@ -101,14 +85,13 @@ for num_pat = 1:node{1}.children.length %number of movie clip
     legend('100','10','1')
     hold off
     cd(sd)
-    saveas(gcf,['120dove' num2str(num_pat) '.jpg'])
     lvs = size(avg_psth,1);
     close
     %plot normailzed psth
     figure
     hold on
     for i = 1:lvs
-        t_psth = avg_psth(i,:)/max(avg_psth(i,:));
+        t_psth = avg_psth(i,:)/sum(avg_psth(i,:));%normalize
         plot(t_psth)
     end
     legend('100','10','1')
@@ -118,17 +101,35 @@ for num_pat = 1:node{1}.children.length %number of movie clip
     close
     
     
-    %scatter plot for the phase diagram
-%     figure
-%     for i = size(avg_psth,1):2
-%         scatter(avg_psth(i,:),avg_psth(i-1,:))
-%         xlabel('resp @ 10 r*')
-%         ylabel('resp @ 100 r*')
-%         saveas(gcf,['2000doveScatter' num2str(num_pat) '.jpg'])
-%     end
-%     close
+    %scatter plot for the phase diagram, convolve with gaussian filter
+    half_width = 150;
+    fact = 25;
+    y = normpdf(-half_width:half_width,0);%[he gaussian filter
+    smooth_psth = zeros(size(avg_psth,1),fact*size(avg_psth,2));
+    for j = 1:lvs
+        temp = avg_psth(j,:);
+        h = interp(conv(temp,y,'same'),fact);
+        smooth_psth(j,:) = h;
+    end
+    figure('units','normalized','outerposition',[0 0 1 1])
+    scatter(smooth_psth(1,:),smooth_psth(2,:))
+    xlabel('100 r*')
+    ylabel('10r*')
+    saveas(gcf,['doves_' cell_type '_' datz '_' num2str(num_pat) '_r100.jpg'])
+    if lvs== 3
+    figure
+    scatter(smooth_psth(2,:),smooth_psth(3,:))
+    xlabel('10 r*')
+    ylabel('1 r*')
+    saveas(gcf,['doves_' cell_type '_' datz '_' num2str(num_pat) '_r10.jpg'])
+    end
 end
 
-
-
-
+close all
+%scatter(avg_psth(t,:),avg_psth(t-1,:))
+% scatter(smooth_psth(t,:),smooth_psth(t-1,:))
+% figure
+% hold on
+% plot(smooth_psth(t,:))
+% plot(smooth_psth(t-1,:))
+% hold off
